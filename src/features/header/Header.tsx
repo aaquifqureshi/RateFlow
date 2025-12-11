@@ -1,24 +1,8 @@
-import { useEffect, useState } from "react";
 import Logo from "../../assets/logo.png";
 import Git_Logo from "../../assets/git_logo.png";
 import Divider from "../../components/Divider";
 
 export default function Header() {
-  const [dark, setDark] = useState(
-    () => localStorage.getItem("theme") === "dark"
-  );
-
-  // Toggle theme + persist
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [dark]);
-
   return (
     <header
       className="
@@ -37,23 +21,6 @@ export default function Header() {
 
         {/* RIGHT — Controls */}
         <div className="flex items-center gap-5">
-          <button
-            onClick={() => setDark(!dark)}
-            aria-label="Toggle Theme"
-            className="
-              w-12 h-6 bg-gray-300 dark:bg-gray-600 
-              rounded-full p-1 flex items-center transition
-            "
-          >
-            <div
-              className={`
-                w-4 h-4 rounded-full bg-white shadow 
-                transform transition 
-                ${dark ? "translate-x-6" : ""}
-              `}
-            ></div>
-          </button>
-
           <a
             href="https://github.com/aaquifqureshi"
             target="_blank"
