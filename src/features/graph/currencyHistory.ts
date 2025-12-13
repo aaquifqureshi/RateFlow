@@ -1,6 +1,6 @@
-// src/hooks/currencyHistory.ts — custom hook that fetches and forward-fills history
+// src/hooks/currencyHistory.ts
 import { useEffect, useState } from "react";
-import { isoDate, dateRange } from "./graphUtils";
+import { isoDate } from "./graphUtils";
 
 export type HistoryRow = { date: string; [currency: string]: number };
 
@@ -26,12 +26,12 @@ export default function useCurrencyHistory(
       return;
     }
 
-    // trivial same-currency -> flat 1s
+    // same currency → flat 1 (this is fine)
     if (from === to) {
       const rows: HistoryRow[] = [];
       const end = new Date();
       for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
+        const d = new Date(end);
         d.setDate(end.getDate() - i);
         rows.push({ date: isoDate(d), [to]: 1 });
       }
@@ -49,109 +49,55 @@ export default function useCurrencyHistory(
       try {
         const end = new Date();
         const start = new Date();
-        start.setDate(end.getDate() - (days - 1));
-        const fmt = isoDate;
 
-        const frankUrl = `https://api.frankfurter.app/${fmt(start)}..${fmt(
+        // overfetch to cover weekends/holidays
+        start.setDate(end.getDate() - days * 2);
+
+        const url = `https://api.frankfurter.app/${isoDate(start)}..${isoDate(
           end
         )}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
-        setLastUrl(frankUrl);
-        const res = await fetch(frankUrl);
+        setLastUrl(url);
+
+        const res = await fetch(url);
         if (!res.ok) {
           setHistory([]);
-          setErrorMessage(`Fallback API returned HTTP ${res.status}`);
+          setErrorMessage(
+            "Live conversion is available for this currency pair, but historical trends are not available for all currencies.Switch to a widely traded currency (USD, EUR, INR, GBP, JPY) to view the chart."
+          );
           return;
         }
-        const frankJson = await res.json();
-        if (
-          !frankJson ||
-          typeof frankJson !== "object" ||
-          !("rates" in frankJson)
-        ) {
+
+        const json = await res.json();
+        if (!json || typeof json !== "object" || !json.rates) {
           setHistory([]);
-          setErrorMessage("Fallback API returned no data.");
+          setErrorMessage(
+            "Live conversion is available for this currency pair, but historical trends are not available for all currencies.Switch to a widely traded currency (USD, EUR, INR, GBP, JPY) to view the chart."
+          );
           return;
         }
 
-        const frankRates = (frankJson as any).rates as Record<
-          string,
-          Record<string, number>
-        >;
-        const map = new Map<string, number>();
-        Object.keys(frankRates).forEach((d) => {
-          const v = frankRates[d]?.[to];
-          map.set(d, typeof v === "number" ? v : Number(v) || 0);
-        });
+        const rates = json.rates as Record<string, Record<string, number>>;
 
-        const allDates = dateRange(fmt(start), fmt(end));
-        const filledRows: HistoryRow[] = [];
-        let lastKnown: number | null = null;
-        allDates.forEach((d) => {
-          if (map.has(d)) {
-            lastKnown = map.get(d)!;
-            filledRows.push({ date: d, [to]: lastKnown });
-          } else {
-            filledRows.push({ date: d, [to]: lastKnown ?? 0 });
-          }
-        });
+        // build ONLY from actual trading days
+        const rows: HistoryRow[] = Object.keys(rates)
+          .sort()
+          .map((date) => ({
+            date,
+            [to]: rates[date][to],
+          }));
 
-        const meaningful = filledRows.some((r) => (r[to] ?? 0) !== 0);
-        if (!meaningful) {
-          // try swapped/inversion fallback
-          const frankSwappedUrl = `https://api.frankfurter.app/${fmt(
-            start
-          )}..${fmt(end)}?from=${encodeURIComponent(
-            to
-          )}&to=${encodeURIComponent(from)}`;
-          setLastUrl(frankSwappedUrl);
-          const swappedRes = await fetch(frankSwappedUrl);
-          if (!swappedRes.ok) {
-            setHistory([]);
-            setErrorMessage("No historical data available for this pair.");
-            return;
-          }
-          const swappedJson = await swappedRes.json();
-          const swappedRates = (swappedJson as any).rates as Record<
-            string,
-            Record<string, number>
-          >;
-          const swappedMap = new Map<string, number>();
-          Object.keys(swappedRates).forEach((d) => {
-            const v = swappedRates[d]?.[from];
-            swappedMap.set(d, typeof v === "number" ? v : Number(v) || 0);
-          });
-
-          lastKnown = null;
-          const inverted: HistoryRow[] = [];
-          allDates.forEach((d) => {
-            if (swappedMap.has(d)) {
-              lastKnown = swappedMap.get(d)!;
-              const inv = lastKnown !== 0 ? 1 / lastKnown : 0;
-              inverted.push({ date: d, [to]: inv });
-            } else {
-              const inv =
-                lastKnown !== null && lastKnown !== 0 ? 1 / lastKnown : 0;
-              inverted.push({ date: d, [to]: inv });
-            }
-          });
-
-          if (!cancelled) {
-            setHistory(inverted);
-            setErrorMessage(null);
-          }
-          return;
-        }
+        const sliced = rows.slice(-days);
 
         if (!cancelled) {
-          setHistory(filledRows);
+          setHistory(sliced);
           setErrorMessage(null);
         }
       } catch (err) {
-        console.error("[useCurrencyHistory] fetchHistory error", err);
+        console.error("[useCurrencyHistory] error", err);
         if (!cancelled) {
           setHistory([]);
-          setErrorMessage("Failed to fetch historical data (see console).");
+          setErrorMessage("Failed to fetch historical data.");
         }
       } finally {
         if (!cancelled) setFetching(false);

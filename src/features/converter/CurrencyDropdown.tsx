@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { iconPathFor, getFlagEmoji } from "../../components/currencyHelper";
+import { useState, useEffect, useRef } from "react";
+import { iconPathFor } from "../../components/currencyHelper";
 
 type Props = {
   value: string;
@@ -32,14 +32,10 @@ export default function CurrencyDropdown({
   const selected = value;
 
   return (
-    <div
-      ref={rootRef}
-      className={`relative ${className}`}
-      style={{ minWidth: 200 }}
-    >
+    <div ref={rootRef} className={`relative w-30 ${className}`}>
       <button
         type="button"
-        className="w-full border rounded-md px-3 py-2 flex items-center justify-between bg-white shadow-sm"
+        className="rounded-full px-2.5 py-1 flex items-center justify-between border border-gray-300 shadow-sm"
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center gap-3 truncate">
@@ -49,12 +45,12 @@ export default function CurrencyDropdown({
             onError={(e) =>
               ((e.currentTarget as HTMLImageElement).style.display = "none")
             }
-            className="w-6 h-6 rounded-sm"
+            className="w-6 h-4 rounded-sm"
           />
 
           {/* Flag + Code */}
-          <span className="text-sm font-medium truncate">
-            {getFlagEmoji(selected)} {selected}
+          <span className="text-sm font-semibold text-gray-900 truncate">
+            {selected}
           </span>
         </div>
 
@@ -76,11 +72,11 @@ export default function CurrencyDropdown({
       </button>
 
       {open && (
-        <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white shadow-lg border rounded-md text-sm py-1">
+        <ul className="absolute z-50 mt-1 max-h-60 overflow-auto bg-white shadow-lg border rounded-md text-sm py-1">
           {options.map((code) => (
             <li
               key={code}
-              className="px-3 py-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
+              className="px-2.5 py-1 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
               onClick={() => {
                 onChange(code);
                 setOpen(false);
@@ -91,12 +87,10 @@ export default function CurrencyDropdown({
                 onError={(e) =>
                   ((e.currentTarget as HTMLImageElement).style.display = "none")
                 }
-                className="w-6 h-6 rounded-sm"
+                className="w-6 h-4 rounded-sm"
               />
 
-              <span className="flex-1 truncate">
-                {getFlagEmoji(code)} {code}
-              </span>
+              <span className="flex-1 truncate">{code}</span>
 
               {/* Inline check icon */}
               {code === value && (

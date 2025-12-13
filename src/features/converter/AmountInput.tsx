@@ -18,9 +18,8 @@ export default function AmountInput({
       type="text"
       inputMode="decimal"
       placeholder={placeholder}
-      className={`block w-full min-w-40 md:min-w-[200px] px-3 py-2 border rounded-lg 
-                  focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500
-                  ${className}`}
+      className={`block w-40 px-1 py-1 text-xl font-semibold tracking-tight border-b border-gray-300 bg-transparent 
+        focus:outline-none focus:border-gray-600${className}`}
       disabled={disabled}
       value={value}
       onChange={(e) => {

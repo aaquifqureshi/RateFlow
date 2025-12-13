@@ -66,9 +66,10 @@ export default function App() {
     <>
       <Header />
 
-      <main className="mt-10">
-        <div className="flex flex-col md:flex-row items-start gap-7">
-          <div className="flex-none w-[620px]">
+      <main className="mt-2 bg-gray-50 min-h-[calc(100vh-40px)]">
+        <div className="flex gap-7 items-start">
+          {/* LEFT COLUMN */}
+          <div className="flex flex-col gap-5 w-[750px] shrink-0">
             <Converter
               currencies={currencies}
               rates={rates}
@@ -77,30 +78,33 @@ export default function App() {
               to={to}
               setFrom={setFrom}
               setTo={setTo}
-              amount={amount} // <- pass amount down
-              setAmount={setAmount} // <- and setter so Converter updates App
+              amount={amount}
+              setAmount={setAmount}
             />
 
-            {/* Live rates cards below the converter */}
+            {/* Graph goes UNDER converter */}
+            <GraphDisplay from={from} to={to} loading={loading} />
+          </div>
+
+          {/* Divider */}
+          <Divider
+            orientation="vertical"
+            length="min(80vh)"
+            thickness="1px"
+            color="bg-gray-700"
+            className="hidden md:block translate-y-10 translate-x-1"
+          />
+
+          {/* RIGHT COLUMN */}
+          <div className="flex pr-5">
             <LiveRates
               amount={amount}
               base={from}
-              existingRates={rates} // reuse rates already fetched in App
+              existingRates={rates}
               apiKey={API_KEY}
-              limit={10}
+              limit={12}
+              onSelectCurrency={(currency) => setTo(currency)}
             />
-          </div>
-
-          <Divider
-            orientation="vertical"
-            length="min(520px, 70vh)"
-            thickness="1px"
-            color="bg-gray-300"
-            className="self-start hidden md:block"
-          />
-
-          <div className="flex-1 w-full">
-            <GraphDisplay from={from} to={to} loading={loading} />
           </div>
         </div>
       </main>

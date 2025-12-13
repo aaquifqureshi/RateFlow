@@ -10,12 +10,12 @@ export default function Header() {
       bg-white
     "
     >
-      <div className="px-2 py-3 flex items-center justify-between">
+      <div className="px-2 py-1 flex items-center justify-between">
         <div className="flex items-center">
           <img
             src={Logo}
             alt="RateFlow Logo"
-            className="h-15 w-auto object-contain"
+            className="h-10 w-auto object-contain"
           />
         </div>
 
@@ -39,7 +39,8 @@ export default function Header() {
         orientation="horizontal"
         length="95%"
         thickness="1px"
-        className="mx-auto"
+        color="bg-gray-300"
+        className="mx-auto traslate-y-10"
       />
     </header>
   );

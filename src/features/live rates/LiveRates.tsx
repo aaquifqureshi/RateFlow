@@ -1,27 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "../../components/Card";
+import { CURRENCY_NAMES } from "../converter/currencyName";
+import { DifferenceLiveRate } from "./DifferenceLiveRate";
 
 type Rates = Record<string, number>;
 
-const TOP10 = [
+const TOP_CURRENCIES = [
   "USD",
   "EUR",
   "JPY",
-  "GBP",
+  "HKD",
   "AUD",
   "CAD",
   "CHF",
   "CNY",
-  "HKD",
+  "GBP",
+  "NZD",
   "SGD",
+  "INR",
+  "DKK",
 ] as const;
 
 interface Props {
   amount: number;
-  base: string; // selected base currency (e.g., "INR")
-  existingRates?: Rates; // rates object from App (all relative to same source, e.g., USD)
+  base: string;
+  existingRates?: Rates;
   apiKey?: string;
   limit?: number;
+  onSelectCurrency: (currency: string) => void;
 }
 
 export default function LiveRates({
@@ -29,7 +35,8 @@ export default function LiveRates({
   base,
   existingRates,
   apiKey,
-  limit = TOP10.length,
+  limit = TOP_CURRENCIES.length,
+  onSelectCurrency,
 }: Props) {
   const [rates, setRates] = useState<Rates>(existingRates ?? {});
   const [loading, setLoading] = useState<boolean>(!existingRates);
@@ -42,6 +49,7 @@ export default function LiveRates({
       setError(null);
       return;
     }
+
     if (!apiKey) {
       setError("No API key for rates.");
       setLoading(false);
@@ -60,19 +68,18 @@ export default function LiveRates({
           )}/latest/${encodeURIComponent(base)}`,
           { signal: controller.signal }
         );
+
         if (!res.ok) throw new Error(`Rates fetch failed: ${res.status}`);
+
         const json = await res.json();
-        if (
-          !json?.conversion_rates ||
-          typeof json.conversion_rates !== "object"
-        ) {
+        if (!json?.conversion_rates) {
           throw new Error("Invalid rates response");
         }
+
         setRates(json.conversion_rates as Rates);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        if (err.name === "AbortError") return;
-        setError(err?.message ?? "Unknown error");
+      } catch (err: unknown) {
+        if ((err as Error).name === "AbortError") return;
+        setError((err as Error).message ?? "Unknown error");
         setRates({});
       } finally {
         setLoading(false);
@@ -82,32 +89,23 @@ export default function LiveRates({
     return () => controller.abort();
   }, [existingRates, apiKey, base]);
 
-  // IMPORTANT: normalize rate if the provided `rates` are all relative to the same base (e.g., USD).
-  // We compute targetPerBase = rates[target] / rates[base]
   const comparisons = useMemo(() => {
-    const list = TOP10.slice(0, limit).filter((c) => c !== base);
-    // if rates[base] exists and is a number, we can normalize; otherwise treat rates as direct
-    const baseRate = rates[base];
-    const canNormalize = typeof baseRate === "number" && baseRate !== 0;
+    const candidates = TOP_CURRENCIES.filter((c) => c !== base);
+    const list = candidates.slice(0, limit);
 
     return list
       .map((code) => {
-        const raw = rates[code]; // e.g., JPY per USD if your object is USD-based
-        let ratePerBase: number | null = null;
-        let converted: number | null = null;
+        const rate = rates[code];
 
-        if (typeof raw === "number") {
-          if (canNormalize) {
-            // normalized rate = (target per USD) / (base per USD) = target per base
-            ratePerBase = raw / baseRate;
-          } else {
-            // fallback: if we can't normalize, assume raw is already per-base
-            ratePerBase = raw;
-          }
-          converted = ratePerBase * Number(amount);
+        if (typeof rate !== "number") {
+          return { code, rate: null, converted: null };
         }
 
-        return { code, rate: ratePerBase, converted };
+        return {
+          code,
+          rate, // already per-base
+          converted: rate * amount,
+        };
       })
       .sort((a, b) => {
         if (a.converted === null) return 1;
@@ -117,13 +115,11 @@ export default function LiveRates({
   }, [rates, base, amount, limit]);
 
   return (
-    <section aria-label="Live top currency comparisons" className="mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-medium text-gray-700">
-          Live Compare (top {limit})
-        </h4>
+    <section aria-label="Live top currency comparisons" className="mt-5">
+      <div className="flex items-center justify-between mb-1">
+        <h4 className="text-sm font-medium text-gray-700">Live Compare</h4>
         <div className="text-xs text-gray-500">
-          Base: {base} • Amount: {amount}
+          Base Amount: {amount} {base}
         </div>
       </div>
 
@@ -133,43 +129,47 @@ export default function LiveRates({
             Loading live rates…
           </div>
         )}
+
         {error && (
           <div className="col-span-full text-sm text-red-600">
             Error: {error}
           </div>
         )}
-        {!loading && !error && comparisons.length === 0 && (
-          <div className="col-span-full text-sm text-gray-500">
-            No rates available.
-          </div>
-        )}
 
         {!loading &&
           !error &&
-          comparisons.map(({ code, rate, converted }) => (
+          comparisons.map(({ code, rate }) => (
             <Card
-              as="article"
               key={code}
+              as="article"
               size="md"
-              className="flex flex-col justify-between"
-              aria-label={`Converted to ${code}`}
+              clickable
+              onClick={() => onSelectCurrency(code)}
+              className="flex flex-col justify-between w-[170px] h-[120px]"
+              aria-label={`Convert ${base} to ${code}`}
             >
-              <div className="flex justify-between items-baseline">
-                <h5 className="text-lg font-semibold">{code}</h5>
-                <span className="text-xs text-gray-500">
-                  Rate: {rate !== null ? Number(rate).toFixed(6) : "—"}
+              {/* ROW 1 */}
+              <div className="text-sm">
+                <span className="font-semibold">{code}</span>{" "}
+                <span className="text-gray-600">
+                  {CURRENCY_NAMES[code as keyof typeof CURRENCY_NAMES] ?? "—"}
                 </span>
               </div>
 
-              <div className="mt-3 text-2xl font-bold">
-                {converted !== null
-                  ? converted.toLocaleString(undefined, {
-                      maximumFractionDigits: 6,
-                    })
-                  : "—"}
+              {/* ROW 2 */}
+              <div className=" text-gray-700">
+                <span className="text-lg font-semibold">1</span>{" "}
+                <span className="text-xs">{base} = </span>
+                <span className="text-lg font-semibold">
+                  {rate !== null ? rate.toFixed(2) : "—"}
+                </span>{" "}
+                <span className="text-xs">{code}</span>
               </div>
 
-              <div className="mt-1 text-xs text-gray-400">Converted amount</div>
+              {/* ROW 3 */}
+              <div className="pt-1 text-sm">
+                <DifferenceLiveRate base={base} target={code} />
+              </div>
             </Card>
           ))}
       </div>

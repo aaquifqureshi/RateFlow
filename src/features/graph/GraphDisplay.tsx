@@ -43,7 +43,7 @@ export default function GraphDisplay({
     }
   }, [timeframe]);
 
-  // hook handles fetching + forward-fill + swap/invert fallback
+  // hook fetches trading-day history only (no fake dates, no forward-fill)
   const { history, fetching, lastUrl, errorMessage } = useCurrencyHistory(
     from,
     to,
@@ -58,6 +58,7 @@ export default function GraphDisplay({
   );
 
   const yDomain = useMemo(() => buildYDomain(minVal, maxVal), [minVal, maxVal]);
+
   const yTicks = useMemo(() => buildYTicks(yDomain, 7), [yDomain]);
 
   const xTicks = useMemo(
@@ -79,8 +80,11 @@ export default function GraphDisplay({
     <div className="flex items-center gap-3">
       <select
         value={timeframe}
-        onChange={(e) => setTimeframe(e.target.value as "7d" | "15d" | "30d")}
-        className="border rounded px-2 py-1 text-sm"
+        onChange={(e) => {
+          e.preventDefault();
+          setTimeframe(e.target.value as "7d" | "15d" | "30d");
+        }}
+        className="px-2.5 py-1 flex items-center justify-between border border-gray-300 shadow-sm focus:outline-none focus:ring-0 focus:border-gray-300"
         aria-label="Select timeframe"
       >
         <option value="7d">7d</option>
@@ -91,38 +95,35 @@ export default function GraphDisplay({
   );
 
   return (
-    <div className="p-4 flex justify-center">
+    <div className="pl-10 flex justify-center">
       <div style={{ width: "100%", maxWidth: 820 }}>
         <Card
           size="lg"
           title={headerTitle}
           headerRight={headerRight}
           as="section"
+          className="w-[720px] bg-white rounded-xl shadow-md h-90"
         >
-          {/* Chart area */}
           {fetching || loading ? (
             <div className="py-16 text-center">Loading chart…</div>
-          ) : chartData.length === 0 ? (
+          ) : chartData.length < 2 ? (
             <div className="py-6 text-center">
-              <div className="mb-2">No data.</div>
+              <div className="mb-2">Not enough data to display chart.</div>
               {errorMessage && (
                 <div className="text-sm text-red-500 mb-2">{errorMessage}</div>
               )}
               {lastUrl && (
                 <div className="text-xs text-gray-600 wrap-break-word">
                   Last request: <code>{lastUrl}</code>
-                  <div className="mt-1 text-xs">
-                    Open this URL in a browser to inspect the raw JSON.
-                  </div>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ width: "100%", height: 360 }}>
-              <ResponsiveContainer width="100%" height={360}>
+            <div style={{ width: "100%", height: 320 }}>
+              <ResponsiveContainer width="100%" height={310}>
                 <LineChart
                   data={chartData}
-                  margin={{ left: 0, right: 16, top: 8, bottom: 24 }}
+                  margin={{ left: 25, right: 25, top: 8, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
@@ -140,9 +141,7 @@ export default function GraphDisplay({
                     }
                     ticks={yTicks}
                     tickFormatter={(v) =>
-                      Math.abs(v) >= 1
-                        ? Number(v.toFixed(4)).toString()
-                        : Number(v.toFixed(6)).toString()
+                      Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(6)
                     }
                     width={80}
                     tick={{ fontSize: 12 }}
@@ -161,7 +160,6 @@ export default function GraphDisplay({
                     stroke="#3b82f6"
                     dot={{ r: 3 }}
                     strokeWidth={2}
-                    connectNulls
                   />
                 </LineChart>
               </ResponsiveContainer>
