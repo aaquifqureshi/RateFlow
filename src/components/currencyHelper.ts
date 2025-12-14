@@ -10,19 +10,3 @@ export function getFlagEmoji(code?: string) {
     String.fromCodePoint(127397 + c.charCodeAt(0))
   );
 }
-
-export const SYMBOL_FALLBACK: Record<string, string> = {
-  USD: "$",
-  EUR: "€",
-  INR: "₹",
-  JPY: "¥",
-  GBP: "£",
-  BTC: "₿",
-  ETH: "Ξ",
-  XAU: "Au",
-  XAG: "Ag",
-};
-export function symbolFor(code?: string) {
-  if (!code) return "";
-  return SYMBOL_FALLBACK[code.toUpperCase()] ?? code.toUpperCase();
-}

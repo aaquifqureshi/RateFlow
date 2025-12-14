@@ -102,7 +102,7 @@ export default function GraphDisplay({
           title={headerTitle}
           headerRight={headerRight}
           as="section"
-          className="w-[720px] bg-white rounded-xl shadow-md h-90"
+          className="w-178 max-w-200 bg-white rounded-xl shadow-md"
         >
           {fetching || loading ? (
             <div className="py-16 text-center">Loading chart…</div>
@@ -119,50 +119,50 @@ export default function GraphDisplay({
               )}
             </div>
           ) : (
-            <div style={{ width: "100%", height: 320 }}>
-              <ResponsiveContainer width="100%" height={310}>
-                <LineChart
-                  data={chartData}
-                  margin={{ left: 25, right: 25, top: 8, bottom: 25 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    ticks={xTicks.length ? xTicks : undefined}
-                    tickFormatter={formatDDMM}
-                    height={40}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <YAxis
-                    domain={
-                      yDomain
-                        ? [Number(yDomain[0]), Number(yDomain[1])]
-                        : undefined
-                    }
-                    ticks={yTicks}
-                    tickFormatter={(v) =>
-                      Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(6)
-                    }
-                    width={80}
-                    tick={{ fontSize: 12 }}
-                    label={{
-                      value: `${to} per 1 ${from}`,
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: -8,
-                    }}
-                  />
-                  <Tooltip />
-                  <Legend verticalAlign="bottom" height={36} />
-                  <Line
-                    type="monotone"
-                    dataKey={to}
-                    stroke="#3b82f6"
-                    dot={{ r: 3 }}
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="h-65 w-full">
+              <div className="h-75 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={chartData}
+                    margin={{ left: 20, right: 20, top: 8, bottom: 25 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      ticks={xTicks.length ? xTicks : undefined}
+                      tickFormatter={formatDDMM}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis
+                      domain={
+                        yDomain
+                          ? [Number(yDomain[0]), Number(yDomain[1])]
+                          : undefined
+                      }
+                      ticks={yTicks}
+                      tickFormatter={(v) =>
+                        Math.abs(v) >= 1 ? v.toFixed(4) : v.toFixed(6)
+                      }
+                      width={80}
+                      tick={{ fontSize: 12 }}
+                      label={{
+                        value: `${to} per 1 ${from}`,
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" />
+                    <Line
+                      type="monotone"
+                      dataKey={to}
+                      stroke="#3b82f6"
+                      dot={{ r: 3 }}
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
         </Card>

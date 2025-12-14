@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import { isoDate } from "./graphUtils";
 
-export type HistoryRow = { date: string; [currency: string]: number };
+export type HistoryRow = {
+  date: string;
+} & Record<string, number>;
 
 export default function useCurrencyHistory(
   from: string,
@@ -33,7 +35,7 @@ export default function useCurrencyHistory(
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(end);
         d.setDate(end.getDate() - i);
-        rows.push({ date: isoDate(d), [to]: 1 });
+        rows.push({ date: isoDate(d), [to]: 1 } as HistoryRow);
       }
       setHistory(rows);
       setErrorMessage(null);

@@ -4,12 +4,7 @@ import Divider from "../../components/Divider";
 
 export default function Header() {
   return (
-    <header
-      className="
-      sticky top-0 z-50 
-      bg-white
-    "
-    >
+    <header className="sticky top-0 z-50 bg-white">
       <div className="px-2 py-1 flex items-center justify-between">
         <div className="flex items-center">
           <img

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 type Props = {
-  base: string; // e.g. "USD"
-  target: string; // e.g. "JPY"
+  base: string;
+  target: string;
 };
 
 type RateState = {
@@ -33,7 +33,7 @@ export function DifferenceLiveRate({ base, target }: Props) {
 
         const end = new Date();
         const start = new Date();
-        start.setDate(end.getDate() - 5); // buffer for weekends/holidays
+        start.setDate(end.getDate() - 5);
 
         const url = `https://api.frankfurter.app/${start
           .toISOString()
@@ -120,7 +120,7 @@ export function DifferenceLiveRate({ base, target }: Props) {
 
   return (
     <div className={`text-sm font-medium ${color}`}>
-      {arrow} {Math.abs(state.delta).toFixed(2)}{" "}
+      {arrow} {Math.abs(state.delta).toFixed(4)}{" "}
       <span className="text-xs">
         ({state.percent > 0 ? "+" : ""}
         {state.percent.toFixed(2)}%)

@@ -75,7 +75,7 @@ export function buildYDomain(
 }
 
 /** Build evenly spaced Y ticks */
-export function buildYTicks(domain?: [number, number], count = 7) {
+export function buildYTicks(domain?: readonly [number, number], count = 7) {
   if (!domain) return undefined;
 
   const [min, max] = domain;

@@ -32,7 +32,7 @@ export default function Converter({
 }) {
   const [leftAmount, setLeftAmount] = useState<string>(String(amount || ""));
   const [rightAmount, setRightAmount] = useState<string>("");
-  const [activeSide, setActiveSide] = useState<"left" | "right">("left");
+  const [, setActiveSide] = useState<"left" | "right">("left");
   const isSwappingRef = useRef(false);
   const NORMALIZE_THRESHOLD = 0.1;
 
@@ -136,14 +136,14 @@ export default function Converter({
       <div className="pl-4 md:pl-10">
         <Card
           size="lg"
-          className="w-[720px] bg-white rounded-xl shadow-md px-6 py-5"
+          className="w-178 bg-white rounded-xl shadow-md px-6 py-5"
         >
           {/* EVERYTHING BELOW IS EXACTLY THE SAME AS BEFORE */}
           <div className="flex items-start justify-start gap-6 ">
             <div className="flex flex-col items-center gap-7">
               <div className="flex items-center w-full">
                 {/* Fixed-width text box */}
-                <div className="w-[200px] text-sm font-medium text-gray-700 truncate">
+                <div className="w-50 text-sm font-medium text-gray-700 truncate">
                   {getCurrencyName(from)}
                 </div>
                 <div>
@@ -192,7 +192,7 @@ export default function Converter({
             <div className="flex flex-col items-center gap-7 -translate-x-6">
               <div className="flex items-center w-full">
                 {/* Fixed-width text box */}
-                <div className="w-[200px] text-sm font-medium text-gray-700 truncate">
+                <div className="w-50 text-sm font-medium text-gray-700 truncate">
                   {getCurrencyName(to)}
                 </div>
                 <div>

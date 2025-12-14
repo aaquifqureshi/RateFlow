@@ -1,4 +1,4 @@
-import { useRate } from "../../components/useRate";
+import { useRate } from "./useRate";
 
 type Props = {
   from: string;

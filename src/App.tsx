@@ -63,13 +63,13 @@ export default function App() {
   }, [currencies]);
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
-      <main className="mt-2 bg-gray-50 min-h-[calc(100vh-40px)]">
+      <main className="flex-1 mt-2">
         <div className="flex gap-7 items-start">
           {/* LEFT COLUMN */}
-          <div className="flex flex-col gap-5 w-[750px] shrink-0">
+          <div className="flex flex-col gap-5 w-187.5 shrink-0">
             <Converter
               currencies={currencies}
               rates={rates}
@@ -82,7 +82,6 @@ export default function App() {
               setAmount={setAmount}
             />
 
-            {/* Graph goes UNDER converter */}
             <GraphDisplay from={from} to={to} loading={loading} />
           </div>
 
@@ -108,6 +107,6 @@ export default function App() {
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 }
