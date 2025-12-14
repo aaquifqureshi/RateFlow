@@ -4,7 +4,8 @@ import { isoDate } from "./graphUtils";
 
 export type HistoryRow = {
   date: string;
-} & Record<string, number>;
+  value: number;
+};
 
 export default function useCurrencyHistory(
   from: string,
@@ -35,7 +36,10 @@ export default function useCurrencyHistory(
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(end);
         d.setDate(end.getDate() - i);
-        rows.push({ date: isoDate(d), [to]: 1 } as HistoryRow);
+        rows.push({
+          date: isoDate(d),
+          value: 1,
+        });
       }
       setHistory(rows);
       setErrorMessage(null);
@@ -86,7 +90,7 @@ export default function useCurrencyHistory(
           .sort()
           .map((date) => ({
             date,
-            [to]: rates[date][to],
+            value: rates[date][to],
           }));
 
         const sliced = rows.slice(-days);

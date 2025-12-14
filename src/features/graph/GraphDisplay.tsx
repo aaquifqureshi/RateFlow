@@ -53,8 +53,8 @@ export default function GraphDisplay({
   const chartData = useMemo(() => sortHistory(history), [history]);
 
   const [minVal, maxVal] = useMemo(
-    () => computeMinMax(chartData, to),
-    [chartData, to]
+    () => computeMinMax(chartData, "value"),
+    [chartData]
   );
 
   const yDomain = useMemo(() => buildYDomain(minVal, maxVal), [minVal, maxVal]);
@@ -155,7 +155,8 @@ export default function GraphDisplay({
                     <Legend verticalAlign="bottom" />
                     <Line
                       type="monotone"
-                      dataKey={to}
+                      dataKey="value"
+                      name={to}
                       stroke="#3b82f6"
                       dot={{ r: 3 }}
                       strokeWidth={2}
